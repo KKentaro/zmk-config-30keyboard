@@ -1,0 +1,6 @@
+if SHIELD_30KEYBOARD
+
+config ZMK_KEYBOARD_NAME
+    default "30keyboard"
+
+endif
