@@ -1,5 +1,42 @@
+name: Build
+
 on: [push, pull_request, workflow_dispatch]
 
 jobs:
   build:
-    uses: zmkfirmware/zmk/.github/workflows/build-user-config.yml@main
+    runs-on: ubuntu-latest
+    name: Build Test
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Cache west modules
+        uses: actions/cache@v4
+        continue-on-error: true
+        with:
+          path: |
+            modules
+            zephyr
+            zmk
+          key: ${{ runner.os }}-west-${{ hashFiles('**/west.yml') }}
+          restore-keys: |
+            ${{ runner.os }}-west-
+
+      - name: Initialize workspace (west init)
+        run: west init -l config
+
+      - name: Update modules (west update)
+        run: west update
+
+      - name: Export Zephyr CMake package
+        run: west zephyr-export
+
+      - name: Build (west build)
+        run: |
+          west build -s zmk/app -b nice_nano_v2 -- -DZMK_CONFIG=${{ github.workspace }}/config -DSHIELD=30keyboard
+
+      - name: Archive firmware
+        uses: actions/upload-artifact@v4
+        with:
+          name: firmware
+          path: build/zephyr/zmk.uf2
