@@ -5,22 +5,12 @@ on: [push, pull_request, workflow_dispatch]
 jobs:
   build:
     runs-on: ubuntu-latest
-    name: Build Test
+    container:
+      image: zmkfirmware/zmk-build-arm:stable
+    name: Build
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Cache west modules
-        uses: actions/cache@v4
-        continue-on-error: true
-        with:
-          path: |
-            modules
-            zephyr
-            zmk
-          key: ${{ runner.os }}-west-${{ hashFiles('**/west.yml') }}
-          restore-keys: |
-            ${{ runner.os }}-west-
 
       - name: Initialize workspace (west init)
         run: west init -l config
